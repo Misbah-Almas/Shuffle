@@ -3,7 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/Misbah/AndroidStudioProjects/Shuffle/app/src/main/res/layout/activity_main.xml" value="0.22826086956521738" />
+        <entry key="..\:/Users/Misbah/AndroidStudioProjects/Shuffle/app/src/main/res/drawable/tab_indicator.xml" value="0.11" />
+        <entry key="..\:/Users/Misbah/AndroidStudioProjects/Shuffle/app/src/main/res/layout/activity_main.xml" value="0.15447154471544716" />
+        <entry key="..\:/Users/Misbah/AndroidStudioProjects/Shuffle/app/src/main/res/layout/fragment_audio.xml" value="0.13360507246376813" />
+        <entry key="..\:/Users/Misbah/AndroidStudioProjects/Shuffle/app/src/main/res/layout/fragment_video.xml" value="0.13360507246376813" />
       </map>
     </option>
   </component>
