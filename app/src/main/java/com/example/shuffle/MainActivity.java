@@ -1,16 +1,16 @@
 package com.example.shuffle;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 
@@ -24,51 +24,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViewPager() {
-        ViewPager viewPager = findViewById(R.id.viewpager);
+        ViewPager2 viewPager = findViewById(R.id.viewpager);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
-        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this);
         viewPagerAdapter.addFragments(new AudioFragment(), "Audios");
         viewPagerAdapter.addFragments(new VideoFragment(), "Videos");
         viewPager.setAdapter(viewPagerAdapter);
-        tabLayout.setupWithViewPager(viewPager);
-
-
+        new TabLayoutMediator(tabLayout, viewPager,
+                (tab, position) -> tab.setText(viewPagerAdapter.getPageTitle(position))
+        ).attach();
 
     }
-    public static class ViewPagerAdapter extends FragmentPagerAdapter{
 
-        private ArrayList<Fragment> fragments;
-        private ArrayList<String> titles;
-        public ViewPagerAdapter(@NonNull FragmentManager fm) {
-            super(fm);
+    public static class ViewPagerAdapter extends FragmentStateAdapter {
+
+        private final ArrayList<Fragment> fragments;
+        private final ArrayList<String> titles;
+
+
+        public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
             this.fragments = new ArrayList<>();
             this.titles = new ArrayList<>();
-
         }
-        void addFragments(Fragment fragment, String title)
-        {
+
+        void addFragments(Fragment fragment, String title) {
             fragments.add(fragment);
             titles.add(title);
 
         }
 
+        CharSequence getPageTitle(int position) {
+            return titles.get(position);
+        }
 
         @NonNull
         @Override
-        public Fragment getItem(int position) {
+        public Fragment createFragment(int position) {
             return fragments.get(position);
         }
 
         @Override
-        public int getCount() {
+        public int getItemCount() {
             return fragments.size();
         }
 
-        @Nullable
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return titles.get(position);
-        }
     }
-
 }
