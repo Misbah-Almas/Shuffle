@@ -1,6 +1,9 @@
 package com.example.shuffle;
 
+import static com.example.shuffle.MainActivity.mySongs;
+
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +36,16 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         holder.textView.setText(mData[position]);
+        holder.itemView.setOnClickListener(view -> {
+            String songName = mData[holder.getBindingAdapterPosition()];
+            Intent intent = new Intent(mContext,PlayerActivity.class);
+            intent.putExtra("songs",mySongs);
+            intent.putExtra("songname",songName);
+            intent.putExtra("pos",position);
+            mContext.startActivity(intent);
+
+
+        });
 
     }
 
