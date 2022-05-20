@@ -5,6 +5,10 @@ import static com.example.shuffle.MainActivity.mySongs;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -70,6 +74,31 @@ public class PlayerActivity extends AppCompatActivity {
         {
             Toast.makeText(this,e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+
+        btnPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer.isPlaying())
+                {
+                    btnPlay.setBackgroundResource(R.drawable.ic_play);
+                    mediaPlayer.pause();
+                }
+                else
+                {
+                    btnPlay.setBackgroundResource(R.drawable.ic_pause);
+                    mediaPlayer.start();
+
+                    TranslateAnimation moveAnim = new TranslateAnimation(-25,25,-25,25);
+                    moveAnim.setInterpolator(new AccelerateInterpolator());
+                    moveAnim.setDuration(600);
+                    moveAnim.setFillEnabled(true);
+                    moveAnim.setFillAfter(true);
+                    moveAnim.setRepeatMode(Animation.REVERSE);
+                    moveAnim.setRepeatCount(1);
+                    imageView.startAnimation(moveAnim);
+                }
+            }
+        });
     }
 
     private void initViews()
