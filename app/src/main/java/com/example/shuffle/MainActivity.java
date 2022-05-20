@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
                 .withListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
-                        displaySong();
                         initViewPager();
+                        displaySong();
 
                     }
 
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else
                 {
-                    if (singleFile.getName().endsWith(".mp3") || singleFile.getName().endsWith(".wav"))
+                    if ((singleFile.getName().endsWith(".mp3") || singleFile.getName().endsWith(".wav")) && !singleFile.getName().startsWith("."))
                     {
                         arrayList.add(singleFile);
                     }
