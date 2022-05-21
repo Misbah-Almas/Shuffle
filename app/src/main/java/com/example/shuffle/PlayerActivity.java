@@ -105,6 +105,13 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                btnNext.performClick();
+            }
+        });
+
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,6 +131,28 @@ public class PlayerActivity extends AppCompatActivity {
                 }
 
                 startAnimation(imageView,360f);
+            }
+        });
+
+        btnPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                position = ((position-1)<0)?(mySongs.size()-1):position-1;
+                Uri uri = Uri.parse(listSongs.get(position).toString());
+                mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
+                songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
+                txtSongName.setText(songName);
+                try {
+                    mediaPlayer.start();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+                startAnimation(imageView,-360f);
             }
         });
 
