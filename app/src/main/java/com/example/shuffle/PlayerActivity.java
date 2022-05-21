@@ -4,9 +4,12 @@ import static com.example.shuffle.MainActivity.mySongs;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
@@ -17,6 +20,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -39,9 +43,33 @@ public class PlayerActivity extends AppCompatActivity {
     String songName;
     public static final String EXTRA_NAME = "song_name";
     static MediaPlayer mediaPlayer;
-    int position = 0;
+    int position = -1;
     static ArrayList<File> listSongs = new ArrayList<>();
     static Uri uri;
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home)
+        {
+            onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(mediaPlayer.isPlaying())
+        {
+            mediaPlayer.stop();
+        }
+        if (barVisualizer != null)
+        {
+            barVisualizer.release();
+        }
+        super.onDestroy();
+    }
+
+    Thread updateSeekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,20 +77,24 @@ public class PlayerActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         getSupportActionBar().setCustomView(R.layout.toolbar_title_pa_layout);
         setContentView(R.layout.activity_player);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         initViews();
         getIntentMethod();
 
     }
     private void getIntentMethod()
     {
-        position = getIntent().getIntExtra("pos",0);
+        position = getIntent().getIntExtra("pos",-1);
         listSongs = mySongs;
         txtSongName.setSelected(true);
         songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
         txtSongName.setText(songName);
         if(listSongs != null)
         {
-            uri = Uri.parse(listSongs.get(position).getPath());
+           uri = Uri.parse(listSongs.get(position).getPath());
         }
 
         if(mediaPlayer != null)
@@ -79,6 +111,65 @@ public class PlayerActivity extends AppCompatActivity {
         {
             Toast.makeText(this,e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+
+        updateSeekBar = new Thread()
+        {
+            @Override
+            public void run() {
+                int totalDuration = mediaPlayer.getDuration();
+                int currentPosition = 0;
+
+                while(currentPosition<totalDuration)
+                {
+                    try{
+                        sleep(500);
+                        currentPosition = mediaPlayer.getCurrentPosition();
+                        seekMusicBar.setProgress(currentPosition);
+                    }
+                    catch (InterruptedException | IllegalStateException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        seekMusicBar.setMax(mediaPlayer.getDuration());
+        updateSeekBar.start();
+        seekMusicBar.getProgressDrawable().setColorFilter(getResources().getColor(R.color.purple_500), PorterDuff.Mode.MULTIPLY);
+        seekMusicBar.getThumb().setColorFilter(getResources().getColor(R.color.purple_500),PorterDuff.Mode.SRC_IN);
+
+        seekMusicBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mediaPlayer.seekTo(seekBar.getProgress());
+            }
+        });
+
+        String endTime = createTime(mediaPlayer.getDuration());
+        txtSongEnd.setText(endTime);
+
+        final Handler handler = new Handler();
+        final int delay = 1000;
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                String currentTime = createTime(mediaPlayer.getCurrentPosition());
+                txtSongStart.setText(currentTime);
+                handler.postDelayed(this,delay);
+            }
+        },delay);
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -112,6 +203,12 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
+        int audioSessionId = mediaPlayer.getAudioSessionId();
+        if (audioSessionId != -1)
+        {
+            barVisualizer.setAudioSessionId(audioSessionId);
+        }
+
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -122,6 +219,14 @@ public class PlayerActivity extends AppCompatActivity {
                 mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
                 songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
                 txtSongName.setText(songName);
+                seekMusicBar.setMax(mediaPlayer.getDuration());
+                txtSongEnd.setText(createTime(mediaPlayer.getDuration()));
+                btnPlay.setBackgroundResource(R.drawable.ic_pause);
+                int audioSessionId = mediaPlayer.getAudioSessionId();
+                if (audioSessionId != -1)
+                {
+                    barVisualizer.setAudioSessionId(audioSessionId);
+                }
                 try {
                     mediaPlayer.start();
                 }
@@ -144,6 +249,14 @@ public class PlayerActivity extends AppCompatActivity {
                 mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
                 songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
                 txtSongName.setText(songName);
+                seekMusicBar.setMax(mediaPlayer.getDuration());
+                txtSongEnd.setText(createTime(mediaPlayer.getDuration()));
+                btnPlay.setBackgroundResource(R.drawable.ic_pause);
+                int audioSessionId = mediaPlayer.getAudioSessionId();
+                if (audioSessionId != -1)
+                {
+                    barVisualizer.setAudioSessionId(audioSessionId);
+                }
                 try {
                     mediaPlayer.start();
                 }
@@ -153,6 +266,26 @@ public class PlayerActivity extends AppCompatActivity {
                 }
 
                 startAnimation(imageView,-360f);
+            }
+        });
+
+        btnFastForward.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer.isPlaying())
+                {
+                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition()+10000);
+                }
+            }
+        });
+
+        btnFastBackward.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer.isPlaying())
+                {
+                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition()-10000);
+                }
             }
         });
 
@@ -182,5 +315,20 @@ public class PlayerActivity extends AppCompatActivity {
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playTogether(objectAnimator);
         animatorSet.start();
+    }
+
+    public String createTime(int duration)
+    {
+        String time = "";
+        int min = duration/1000/60;
+        int sec = duration/1000%60;
+
+        time = time+min+":";
+        if (sec<10)
+        {
+            time+="0";
+        }
+        time+=sec;
+        return time;
     }
 }

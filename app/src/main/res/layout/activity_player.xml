@@ -147,7 +147,7 @@
                 xmlns:custom="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/wave"
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
+                android:layout_height="100dp"
                 android:layout_alignParentBottom="true"
                 custom:avDensity="0.5"
                 custom:avType="outline"
