@@ -143,6 +143,18 @@
                 android:layout_marginEnd="15dp"
                 android:layout_toStartOf="@id/btnPrevious"/>
 
+            <com.gauravk.audiovisualizer.visualizer.BarVisualizer
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/wave"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:layout_alignParentBottom="true"
+                custom:avDensity="0.5"
+                custom:avType="outline"
+                custom:avWidth="5dp"
+                custom:avColor="@color/purple_500"
+                custom:avSpeed="normal"/>
+
 
         </RelativeLayout>
 

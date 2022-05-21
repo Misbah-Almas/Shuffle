@@ -2,6 +2,8 @@ package com.example.shuffle;
 
 import static com.example.shuffle.MainActivity.mySongs;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.gauravk.audiovisualizer.visualizer.BarVisualizer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,6 +31,8 @@ public class PlayerActivity extends AppCompatActivity {
     Button btnPlay,btnNext,btnPrevious,btnFastForward,btnFastBackward;
     TextView txtSongName,txtSongStart,txtSongEnd;
     SeekBar seekMusicBar;
+
+    BarVisualizer barVisualizer;
 
     ImageView imageView;
 
@@ -99,6 +104,29 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             }
         });
+
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                position = ((position+1)%listSongs.size());
+                Uri uri = Uri.parse(listSongs.get(position).toString());
+                mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
+                songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
+                txtSongName.setText(songName);
+                try {
+                    mediaPlayer.start();
+                }
+                catch (Exception e)
+                {
+                   e.printStackTrace();
+                }
+
+                startAnimation(imageView,360f);
+            }
+        });
+
     }
 
     private void initViews()
@@ -114,8 +142,16 @@ public class PlayerActivity extends AppCompatActivity {
         txtSongEnd = findViewById(R.id.txtViewEnd);
 
         seekMusicBar = findViewById(R.id.seekBar);
-
-
+        barVisualizer = findViewById(R.id.wave);
         imageView = findViewById(R.id.imgView);
+    }
+
+    public void startAnimation(View view,Float degree)
+    {
+        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(imageView,"rotation",0f,degree);
+        objectAnimator.setDuration(1000);
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(objectAnimator);
+        animatorSet.start();
     }
 }
