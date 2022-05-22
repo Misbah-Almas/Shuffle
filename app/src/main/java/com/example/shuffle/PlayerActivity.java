@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
@@ -18,7 +17,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -41,7 +39,6 @@ public class PlayerActivity extends AppCompatActivity {
     ImageView imageView;
 
     String songName;
-    public static final String EXTRA_NAME = "song_name";
     static MediaPlayer mediaPlayer;
     int position = -1;
     static ArrayList<File> listSongs = new ArrayList<>();
@@ -61,6 +58,7 @@ public class PlayerActivity extends AppCompatActivity {
         if(mediaPlayer.isPlaying())
         {
             mediaPlayer.stop();
+            updateSeekBar.interrupt();
         }
         if (barVisualizer != null)
         {
@@ -94,7 +92,7 @@ public class PlayerActivity extends AppCompatActivity {
         txtSongName.setText(songName);
         if(listSongs != null)
         {
-           uri = Uri.parse(listSongs.get(position).getPath());
+           uri = Uri.parse(listSongs.get(position).toString());
         }
 
         if(mediaPlayer != null)
@@ -103,14 +101,8 @@ public class PlayerActivity extends AppCompatActivity {
             mediaPlayer.release();
 
         }
-        try {
-            mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
-            mediaPlayer.start();
-        }
-        catch (Exception e)
-        {
-            Toast.makeText(this,e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+        mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
+        mediaPlayer.start();
 
         updateSeekBar = new Thread()
         {
@@ -171,37 +163,29 @@ public class PlayerActivity extends AppCompatActivity {
             }
         },delay);
 
-        btnPlay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mediaPlayer.isPlaying())
-                {
-                    btnPlay.setBackgroundResource(R.drawable.ic_play);
-                    mediaPlayer.pause();
-                }
-                else
-                {
-                    btnPlay.setBackgroundResource(R.drawable.ic_pause);
-                    mediaPlayer.start();
+        btnPlay.setOnClickListener(view -> {
+            if (mediaPlayer.isPlaying())
+            {
+                btnPlay.setBackgroundResource(R.drawable.ic_play);
+                mediaPlayer.pause();
+            }
+            else
+            {
+                btnPlay.setBackgroundResource(R.drawable.ic_pause);
+                mediaPlayer.start();
 
-                    TranslateAnimation moveAnim = new TranslateAnimation(-25,25,-25,25);
-                    moveAnim.setInterpolator(new AccelerateInterpolator());
-                    moveAnim.setDuration(600);
-                    moveAnim.setFillEnabled(true);
-                    moveAnim.setFillAfter(true);
-                    moveAnim.setRepeatMode(Animation.REVERSE);
-                    moveAnim.setRepeatCount(1);
-                    imageView.startAnimation(moveAnim);
-                }
+                TranslateAnimation moveAnim = new TranslateAnimation(-25,25,-25,25);
+                moveAnim.setInterpolator(new AccelerateInterpolator());
+                moveAnim.setDuration(600);
+                moveAnim.setFillEnabled(true);
+                moveAnim.setFillAfter(true);
+                moveAnim.setRepeatMode(Animation.REVERSE);
+                moveAnim.setRepeatCount(1);
+                imageView.startAnimation(moveAnim);
             }
         });
 
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                btnNext.performClick();
-            }
-        });
+        mediaPlayer.setOnCompletionListener(mediaPlayer -> btnNext.performClick());
 
         int audioSessionId = mediaPlayer.getAudioSessionId();
         if (audioSessionId != -1)
@@ -209,83 +193,61 @@ public class PlayerActivity extends AppCompatActivity {
             barVisualizer.setAudioSessionId(audioSessionId);
         }
 
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mediaPlayer.stop();
-                mediaPlayer.release();
-                position = ((position+1)%listSongs.size());
-                Uri uri = Uri.parse(listSongs.get(position).toString());
-                mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
-                songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
-                txtSongName.setText(songName);
-                seekMusicBar.setMax(mediaPlayer.getDuration());
-                txtSongEnd.setText(createTime(mediaPlayer.getDuration()));
-                btnPlay.setBackgroundResource(R.drawable.ic_pause);
-                int audioSessionId = mediaPlayer.getAudioSessionId();
-                if (audioSessionId != -1)
-                {
-                    barVisualizer.setAudioSessionId(audioSessionId);
-                }
-                try {
-                    mediaPlayer.start();
-                }
-                catch (Exception e)
-                {
-                   e.printStackTrace();
-                }
+        btnNext.setOnClickListener(view -> {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            position = ((position+1)%listSongs.size());
+            Uri uri = Uri.parse(listSongs.get(position).toString());
+            mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
+            songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
+            txtSongName.setText(songName);
+            seekMusicBar.setMax(mediaPlayer.getDuration());
+            txtSongEnd.setText(createTime(mediaPlayer.getDuration()));
+            btnPlay.setBackgroundResource(R.drawable.ic_pause);
+            int audioSessionId1 = mediaPlayer.getAudioSessionId();
+            if (audioSessionId1 != -1)
+            {
+                barVisualizer.setAudioSessionId(audioSessionId1);
+            }
 
-                startAnimation(imageView,360f);
+            mediaPlayer.start();
+
+            startAnimation(360f);
+        });
+
+        btnPrevious.setOnClickListener(view -> {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            position = ((position-1)<0)?(mySongs.size()-1):position-1;
+            Uri uri = Uri.parse(listSongs.get(position).toString());
+            mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
+            songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
+            txtSongName.setText(songName);
+            seekMusicBar.setMax(mediaPlayer.getDuration());
+            txtSongEnd.setText(createTime(mediaPlayer.getDuration()));
+            btnPlay.setBackgroundResource(R.drawable.ic_pause);
+            int audioSessionId12 = mediaPlayer.getAudioSessionId();
+            if (audioSessionId12 != -1)
+            {
+                barVisualizer.setAudioSessionId(audioSessionId12);
+            }
+
+            mediaPlayer.start();
+
+            startAnimation(-360f);
+        });
+
+        btnFastForward.setOnClickListener(view -> {
+            if (mediaPlayer.isPlaying())
+            {
+                mediaPlayer.seekTo(mediaPlayer.getCurrentPosition()+10000);
             }
         });
 
-        btnPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mediaPlayer.stop();
-                mediaPlayer.release();
-                position = ((position-1)<0)?(mySongs.size()-1):position-1;
-                Uri uri = Uri.parse(listSongs.get(position).toString());
-                mediaPlayer = MediaPlayer.create(getApplicationContext(),uri);
-                songName = listSongs.get(position).getName().replace(".mp3","").replace(".wav","");
-                txtSongName.setText(songName);
-                seekMusicBar.setMax(mediaPlayer.getDuration());
-                txtSongEnd.setText(createTime(mediaPlayer.getDuration()));
-                btnPlay.setBackgroundResource(R.drawable.ic_pause);
-                int audioSessionId = mediaPlayer.getAudioSessionId();
-                if (audioSessionId != -1)
-                {
-                    barVisualizer.setAudioSessionId(audioSessionId);
-                }
-                try {
-                    mediaPlayer.start();
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-
-                startAnimation(imageView,-360f);
-            }
-        });
-
-        btnFastForward.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mediaPlayer.isPlaying())
-                {
-                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition()+10000);
-                }
-            }
-        });
-
-        btnFastBackward.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mediaPlayer.isPlaying())
-                {
-                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition()-10000);
-                }
+        btnFastBackward.setOnClickListener(view -> {
+            if (mediaPlayer.isPlaying())
+            {
+                mediaPlayer.seekTo(mediaPlayer.getCurrentPosition()-10000);
             }
         });
 
@@ -308,7 +270,7 @@ public class PlayerActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imgView);
     }
 
-    public void startAnimation(View view,Float degree)
+    public void startAnimation(Float degree)
     {
         ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(imageView,"rotation",0f,degree);
         objectAnimator.setDuration(1000);
