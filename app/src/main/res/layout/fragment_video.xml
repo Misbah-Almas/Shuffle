@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".VideoFragment">
+    tools:context=".VideoFragment"
+    android:background="@color/white">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/video_text_fragment"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:textColor="@color/gray"
-        android:textStyle="italic"
-        android:textSize="18sp"/>
+        android:id="@+id/recyclerView1"/>
 
-</FrameLayout>
+</RelativeLayout>

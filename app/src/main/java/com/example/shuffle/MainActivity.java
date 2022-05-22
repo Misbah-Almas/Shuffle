@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this);
         viewPagerAdapter.addFragments(new AudioFragment(), "Audios");
-        viewPagerAdapter.addFragments(new VideoFragment(), "Videos");
+        viewPagerAdapter.addFragments(new VideoFragment(), "Albums");
         viewPager.setAdapter(viewPagerAdapter);
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> tab.setText(viewPagerAdapter.getPageTitle(position))
